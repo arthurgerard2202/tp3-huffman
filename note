@@ -1,0 +1,46 @@
+Fonction utile pour FILE
+fgetc
+fputc
+fseek
+fprintf
+fscanf
+fopen
+fclose
+
+typedef struct {
+  // Tableau stockant des pointeurs vers chaque valeur du tas
+  void **array;
+  // Taille totale du tableau
+  int size_array;
+  // Taille du tas (nombres de case utilisées dans le tableau)
+  int size_heap;
+  // Pointeur sur la fonction de comparaison utilisée par le tas
+  bool (*fc)(void *, void *);
+} binheap;
+
+
+typedef struct huffnode {
+  // Fréquence
+  int freq;
+
+  // Octet codé par le noeud (significatif seulement si le noeud est une
+  // feuille)
+  int byte;
+
+  // Enfant gauche (NULL si pas de fils gauche)
+  struct huffnode *leftchild;
+
+  // Enfant droit (NULL si pas de fils droit)
+  struct huffnode *rightchild;
+} huffnode;
+
+
+typedef struct {
+  // Le nombre de bits dans le code (un code n'aura jamais plus de 256 bits).
+  unsigned char size;
+
+  // Le tableau qui stocke le code : les valeurs sont toutes 0 ou 1.
+  unsigned char *code;
+} huffcode;
+
+

@@ -79,7 +79,7 @@ static void shrink_binheap(binheap *p) {
 
 /* Création d'un tas vide */
 binheap *create_binheap(bool (*fc)(void *, void *)) {
-  binheap *p = malloc(sizeof(binheap*));
+  binheap *p = malloc(sizeof(binheap));
   p->array = malloc(sizeof(void*));
   p->size_array = 1;
   p->size_heap = 0;
@@ -113,12 +113,14 @@ void push_binheap(binheap *p, void *val) {
   if (i == getsize_array(p)){
     grow_binheap(p);
   }
-  p->array[i-1] = val;
-  while (!p->fc(p->array[parent_binheap(i)],p->array[i])){
-    switch_elements_binheap(p,i,parent_binheap(i));
+  p->array[i] = val;
+  p->size_heap++;
+  
+  // Remonter l'élément tant que la propriété du tas n'est pas respectée
+  while (i > 0 && p->fc(p->array[i], p->array[parent_binheap(i)])){
+    switch_elements_binheap(p, i, parent_binheap(i));
     i = parent_binheap(i);
   }
-  p->size_heap++;
 }
 
 /* Récupération du minimum sans le retirer */
@@ -128,20 +130,38 @@ void *peekmin_binheap(binheap *p) {
 
 /* Récupération du minimum en le retirant */
 void *popmin_binheap(binheap *p) {
-  int i = getsize_binheap(p); 
+  if (isempty_binheap(p)) {
+    return NULL;
+  }
+  
   void *output = p->array[0];
-  p->array[0] = p->array[i-1];
   p->size_heap--;
-  i--;
-  for (int j=0;j<i;j++){
-    if (!(p->fc(p->array[i],p->array[left_binheap(i)]) && p->fc(p->array[i], p->array[right_binheap(i)]))){
-      if(p->fc(p->array[left_binheap(i)],p->array[right_binheap(i)])){
-        switch_elements_binheap(p,i,left_binheap(i));
+  
+  if (p->size_heap > 0) {
+    p->array[0] = p->array[p->size_heap];
+    
+    // Descendre l'élément racine pour restaurer la propriété du tas
+    int i = 0;
+    while (left_binheap(i) < p->size_heap) {
+      int left = left_binheap(i);
+      int right = right_binheap(i);
+      int smallest = i;
+      
+      if (left < p->size_heap && p->fc(p->array[left], p->array[smallest])) {
+        smallest = left;
       }
-      else 
-        switch_elements_binheap(p,i,right_binheap(i));
+      if (right < p->size_heap && p->fc(p->array[right], p->array[smallest])) {
+        smallest = right;
+      }
+      
+      if (smallest == i) {
+        break;
+      }
+      
+      switch_elements_binheap(p, i, smallest);
+      i = smallest;
     }
   }
-
+  
   return output;
 }

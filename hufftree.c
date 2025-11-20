@@ -6,11 +6,9 @@
 
 /* Création d'une feuille */
 huffnode *create_huffleaf(int byte, int freq) {
-  huffnode *leftchild = malloc(sizeof(huffnode*));
-  huffnode *rightchild = malloc(sizeof(huffnode*));
-  huffnode * p = malloc(sizeof(huffnode*));
-  p->leftchild = leftchild;
-  p->rightchild = rightchild;
+  huffnode *p = malloc(sizeof(huffnode));
+  p->leftchild = NULL;
+  p->rightchild = NULL;
   p->byte = byte;
   p->freq = freq;
   
@@ -70,6 +68,7 @@ bool compare_hufftree(void *p1, void *p2) {
 
 /* Création de l'arbre de Huffman à partir du fichier à compresser */
 huffnode *datafile_to_hufftree(FILE *input) {
+  INFO();
 
   /* Phase 1: création du tableau de fréquences */
 
@@ -81,12 +80,16 @@ huffnode *datafile_to_hufftree(FILE *input) {
   */
 
   int freq[256];
-  for (int i=0;i<255;i++){
+  for (int i=0;i<256;i++){
     freq[i] = 0;
   }
-  while (fgetc(input) != -1){
-    freq[fgetc(input)]++;
+  int c;
+  while ((c = fgetc(input)) != -1){
+    freq[c]++;
   }
+  
+  // Repositionner le curseur au début du fichier pour la compression
+  rewind(input);
 
   /* Phase 2: intialisation de la file de priorité à partir du tableau de
    * fréquences */
