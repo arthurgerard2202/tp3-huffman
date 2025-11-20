@@ -32,25 +32,29 @@ bool isleaf_huffnode(huffnode *p) {
 
 /* Retourne la valeur de l'octet correspondant à un noeud */
 int getbyte_huffnode(huffnode *p) {
-  // À écrire
-  return 0;
+  return p->byte;
 }
 
 /* Retournent les fils d'un noeud */
 
 huffnode *getleft_huffnode(huffnode *p) {
-  // À écrire
-  return NULL;
+  return p->leftchild;
 }
+
 huffnode *getright_huffnode(huffnode *p) {
-  // À écrire
-  return NULL;
+  return p->rightchild;
 }
 
 /* Libération d'un arbre */
 
 void free_hufftree(huffnode *p) {
-  // À écrire
+  if (p->leftchild != NULL){
+    free_hufftree(p->leftchild);
+  }
+  if (p->rightchild != NULL){
+    free_hufftree(p->rightchild);
+  }
+  free(p);
 }
 
 /**********************************************/
@@ -59,35 +63,79 @@ void free_hufftree(huffnode *p) {
 
 /* Comparaison de deux arbres */
 bool compare_hufftree(void *p1, void *p2) {
-  // À écrire
-  return true;
+  huffnode *huffnode1 = (huffnode *)p1;
+  huffnode *huffnode2 = (huffnode *)p2;
+  return huffnode1->freq < huffnode2->freq;;
 }
 
 /* Création de l'arbre de Huffman à partir du fichier à compresser */
 huffnode *datafile_to_hufftree(FILE *input) {
+
   /* Phase 1: création du tableau de fréquences */
 
-  // À écrire
+  int freq[256];
+  for (int i=0;i<255;i++){
+    freq[i] = 0;
+  }
+  while (fgetc(input) != -1){
+    freq[fgetc(input)]++;
+  }
 
   /* Phase 2: intialisation de la file de priorité à partir du tableau de
    * fréquences */
 
-  // À écrire
+  binheap *priority_queue = create_binheap(&compare_hufftree);
 
   /* Phase 3: création de l'arbre de Huffman à partir de la file de priorités */
 
-  // À écrire
+  for (int i = 0; i < 256; i++) {
+    if (freq[i] > 0) {
+    huffnode *leaf = create_huffleaf(i, freq[i]);
+    push_binheap(priority_queue, leaf);
+    }
+  }
 
-  return NULL;
+  while (getsize_binheap(priority_queue) > 1) {
+    huffnode *left = (huffnode *)popmin_binheap(priority_queue);
+    huffnode *right = (huffnode *)popmin_binheap(priority_queue);
+    huffnode *merged = merge_hufftree(left, right);
+    push_binheap(priority_queue, merged);
+  }
+  huffnode *huffman_tree = (huffnode *)popmin_binheap(priority_queue);
+  delete_binheap(priority_queue);
+  return huffman_tree;
 }
 
 /* Écriture de l'arbre de Huffman dans le futur fichier compressé */
 void save_hufftree(huffnode *p, FILE *f) {
-  // À écrire
+  if (isleaf_huffnode(p)) {
+    fputc(1, f);
+    fputc(p->byte, f);
+  } else {
+    fputc(0, f);
+    save_hufftree(p->leftchild, f);
+    save_hufftree(p->rightchild, f);
+  }
 }
+
 
 /* Lecture de l'arbre de Huffman dans le fichier compressé */
 huffnode *read_hufftree(FILE *f) {
-  // À écrire
+  int marker = fgetc(f);
+  if (marker == -1) {
+    return NULL;
+  }
+
+  if (marker == 1) {
+    int byte = fgetc(f);
+    if (byte == EOF) {
+      return NULL;
+    }
+    return create_huffleaf(byte, 0);
+  } else {
+    huffnode *left = read_hufftree(f);
+    huffnode *right = read_hufftree(f);
+    return merge_hufftree(left, right);
+  }
   return NULL;
 }
