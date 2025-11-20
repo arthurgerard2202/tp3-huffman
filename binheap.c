@@ -118,6 +118,7 @@ void push_binheap(binheap *p, void *val) {
     switch_elements_binheap(p,i,parent_binheap(i));
     i = parent_binheap(i);
   }
+  p->size_heap++;
 }
 
 /* Récupération du minimum sans le retirer */

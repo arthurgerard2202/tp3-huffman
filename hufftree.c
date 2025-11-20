@@ -65,13 +65,20 @@ void free_hufftree(huffnode *p) {
 bool compare_hufftree(void *p1, void *p2) {
   huffnode *huffnode1 = (huffnode *)p1;
   huffnode *huffnode2 = (huffnode *)p2;
-  return huffnode1->freq < huffnode2->freq;;
+  return huffnode1->freq < huffnode2->freq;
 }
 
 /* Création de l'arbre de Huffman à partir du fichier à compresser */
 huffnode *datafile_to_hufftree(FILE *input) {
 
   /* Phase 1: création du tableau de fréquences */
+
+  /*
+  fgetc(FILE *stream) :
+    - lit 1 caractère dans un fichier 
+    - avance le curseur 
+    - retourne -1 si la lecture a échoué 
+  */
 
   int freq[256];
   for (int i=0;i<255;i++){
@@ -137,5 +144,4 @@ huffnode *read_hufftree(FILE *f) {
     huffnode *right = read_hufftree(f);
     return merge_hufftree(left, right);
   }
-  return NULL;
 }
